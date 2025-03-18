@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import Cookies from "js-cookie";
 import axios from "axios";
 import photo1 from "../assets/photo1.jpeg";
 
 const Login = () => {
+  // Define states
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -15,6 +15,7 @@ const Login = () => {
 
   const navigate = useNavigate();
 
+  // Load Google Sign-In library when component mounts
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
@@ -23,11 +24,12 @@ const Login = () => {
     script.onload = () => {
       window.google.accounts.id.initialize({
         client_id:
-          "268942872776-ulvhmack82ul53133h6fkdd4f7ehnsgb.apps.googleusercontent.com",
+          "268942872776-ulvhmack82ul53133h6fkdd4f7ehnsgb.apps.googleusercontent.com", // Replace with your client ID
         callback: handleGoogleLogin,
         ux_mode: "popup",
       });
 
+      // Display Google sign-in button
       window.google.accounts.id.renderButton(
         document.getElementById("google-signin-btn"),
         { theme: "filled_black", size: "large" }
@@ -36,18 +38,16 @@ const Login = () => {
     document.body.appendChild(script);
   }, [navigate]);
 
+  // Handle Google login
   const handleGoogleLogin = async (response) => {
     try {
       const res = await axios.post(
         "http://localhost:5000/api/users/google-login",
-        { credential: response.credential },
-        { withCredentials: true }
+        { credential: response.credential }
       );
 
       if (res.data.token) {
-        const expiryDays = rememberMe ? 30 : 1;
-        Cookies.set("token", res.data.token, { expires: expiryDays });
-        Cookies.set("user_id", res.data.user_id, { expires: expiryDays });
+        localStorage.setItem("token", res.data.token); // Store token in localStorage
       }
 
       Swal.fire({
@@ -70,10 +70,12 @@ const Login = () => {
     }
   };
 
+  // Handle form input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Handle email/password login
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -86,14 +88,16 @@ const Login = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true,
         }
       );
 
       if (response.data.token) {
-        const expiryDays = rememberMe ? 30 : 1;
-        Cookies.set("token", response.data.token, { expires: expiryDays });
-        Cookies.set("user_id", response.data.user_id, { expires: expiryDays });
+        localStorage.setItem("token", response.data.token); // Store token in localStorage
+        if (rememberMe) {
+          const expiryDate = new Date();
+          expiryDate.setDate(expiryDate.getDate() + 30); // 30 days expiry
+          localStorage.setItem("token_expiry", expiryDate.toISOString());
+        }
       }
 
       Swal.fire({
@@ -104,7 +108,7 @@ const Login = () => {
         color: "#ffffff",
         confirmButtonColor: "#61090b",
       }).then(() => {
-        navigate("/");
+         navigate(response.data.redirectUrl || "/");
       });
     } catch (error) {
       Swal.fire({
@@ -152,7 +156,7 @@ const Login = () => {
             <input
               type="email"
               name="email"
-              placeholder="Registered Email"
+              placeholder="Email"
               value={formData.email}
               onChange={handleChange}
               className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500"
@@ -165,7 +169,7 @@ const Login = () => {
             <input
               type="password"
               name="password"
-              placeholder="Access Code"
+              placeholder="Password"
               value={formData.password}
               onChange={handleChange}
               className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500"
@@ -188,7 +192,7 @@ const Login = () => {
                 htmlFor="remember-me"
                 className="ml-2 block text-sm text-gray-400"
               >
-                Extend access period
+                Remember me
               </label>
             </div>
             <div className="text-sm">
@@ -196,7 +200,6 @@ const Login = () => {
                 href="/forgot-password"
                 className="text-[#61090b] hover:text-red-700"
               >
-                Clearance reset
               </a>
             </div>
           </div>
@@ -208,7 +211,7 @@ const Login = () => {
             }`}
             disabled={loading}
           >
-            {loading ? "VERIFYING..." : "ACCESS FILES"}
+            {loading ? "VERIFYING..." : "Sign In"}
           </button>
         </form>
 
@@ -221,12 +224,12 @@ const Login = () => {
           <p className="text-gray-400 text-xs">
             Need access?{" "}
             <a href="/signup" className="text-[#61090b] hover:text-red-700">
-              Join Investigation
+              Sign Up
             </a>
           </p>
         </div>
 
-        {/* Bottom dripping effect */}
+        {/* Red dripping effect at the bottom */}
         <div className="absolute bottom-0 left-0 right-0 h-2 bg-[#61090b]">
           <div className="absolute -top-4 left-7 w-1 h-4 bg-[#61090b]"></div>
           <div className="absolute -top-8 left-20 w-1 h-8 bg-[#61090b]"></div>

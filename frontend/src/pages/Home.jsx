@@ -1,23 +1,29 @@
 import React from "react";
-import hero from "../assets/Recording 2025-03-12 205117.mp4"; // تأكد أن اسم الملف صحيح
-import NewsTicker from "../Component/Homecomponent/NewsTicker ";
-import CategorySection from "../Component/Homecomponent/CategorySection";
-import { Play } from "lucide-react";
-import CrimeStatistics from "../Component/Homecomponent/Statistics";
-import TrendReports from "../Component/Homecomponent/TrendReports";
-import CrimeNewsWarning from "../Component/Homecomponent/CrimeNewsWarning"
-import { useEffect, useState } from "react";
-import heroVideo from "../assets/Recording 2025-03-14 140130.mp4"; // تأكد أن اسم الملف صحيح
-import CybercrimeSection from "../Component/Homecomponent/CybercrimeSection"
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { Play } from "lucide-react";
+import hero from "../assets/Recording 2025-03-12 205117.mp4"; // تأكد أن اسم الملف صحيح
+import CategorySection from "../Component/Homecomponent/CategorySection";
+import heroVideo from "../assets/Recording 2025-03-14 140130.mp4"; // تأكد أن اسم الملف صحيح
+import CrimeStatistics from "../Component/Homecomponent/Statistics";
+import CrimeNewsWarning from "../Component/Homecomponent/CrimeNewsWarning"
+import CybercrimeSection from "../Component/Homecomponent/CybercrimeSection"
+import { CrimePodcastSection } from "../Component/Homecomponent/CrimePodcastSection"
+import NewsTicker from "../Component/Homecomponent/NewsTicker ";
+import TrendReports from "../Component/Homecomponent/TrendReports";
+import VideoModal from "../Component/Homecomponent/VideoModal"
+// import crimeSceneImage from "../assets/crime-scene.png"; // تأكد من المسار الصحيح للصورة
+// import crimeSceneImage from "../assets/finger.jpg"; // تأكد من المسار الصحيح للصورة
 
 
-const statsData = [
-  { value: "10+", label: "Years Experience" },
-  { value: "50+", label: "Global Correspondents" },
-  { value: "1000+", label: "Investigations Covered" },
-  { value: "24/7", label: "News Coverage" },
-];
+// <div className="absolute right-8 bottom-8 opacity-40 w-40 h-40">
+// <img
+//   src={crimeSceneImage}
+//   alt="Crime Scene Silhouette"
+//   className="w-full h-full"
+// />
+// </div> 
 
 
 
@@ -26,11 +32,60 @@ const statsData = [
 const Home = () => {
 
 
-  const [stats, setStats] = useState([]);
 
-  useEffect(() => {
-    setStats(statsData);
-  }, []);
+  
+// =============section 2
+
+const [articlesCount, setArticlesCount] = useState(0);
+const [loading, setLoading] = useState(true);
+
+const fetchArticlesCount = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/api/articles/get");
+    console.log("Fetched articles:", response.data); // Check the data
+    setArticlesCount(response.data.length); // Set the count, not the entire array
+  } catch (error) {
+    console.error("Error fetching articles:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  fetchArticlesCount();
+}, []);
+// =======================================visitor
+const [visitCount, setVisitCount] = useState(0);
+useEffect(() => {
+  // استرجاع عدد الزيارات المخزن
+  const storedVisitCount = localStorage.getItem('visitCount');
+
+  if (storedVisitCount) {
+    // زيادة العدد بمقدار واحد
+    const newVisitCount = parseInt(storedVisitCount, 10) +1;
+    setVisitCount(newVisitCount);
+    // تخزين العدد المحدث
+    localStorage.setItem('visitCount', newVisitCount);
+  } else {
+    // إذا لم يكن هناك عدد مخزن، تعيينه إلى 1
+    setVisitCount(0);
+    localStorage.setItem('visitCount', 1);
+  }
+}, []);
+// statsData with the updated articlesCount
+const statsData = [
+  { value: "New", label: "Experience" },
+  { value: visitCount, label: "Global Correspondents" },
+  { value: articlesCount, label: "Investigations Covered" }, // This will now show the correct count
+  { value: "24/7", label: "News Coverage" },
+];
+
+// Section to display stats
+const [stats, setStats] = useState([]);
+
+useEffect(() => {
+  setStats(statsData); // Update stats after articlesCount changes
+}, [articlesCount]);
 
 
 
@@ -103,6 +158,7 @@ const Home = () => {
       {/* MostViewedReports  */}
       <div className="my-5  mb-20">
         <CategorySection />
+        
       </div>
 
 
@@ -160,6 +216,13 @@ const Home = () => {
       </div>
     </div>
 
+
+
+
+
+
+
+
       {/* Statistics  */}
       <div className="my-20  mb-20">
         <CrimeStatistics />
@@ -172,8 +235,12 @@ const Home = () => {
 
 
       {/* TrendReports  */}
-      <div className="my-20  mb-20">
+      <div className="my-5  mb-30">
         <TrendReports />
+      </div>
+
+      <div className="my-5  mb-30">
+        <CrimePodcastSection />
       </div>
 
 
@@ -184,3 +251,10 @@ const Home = () => {
 };
 
 export default Home;
+
+
+
+
+
+
+

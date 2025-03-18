@@ -1,23 +1,43 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const reports = [
-  { id: 1, title: "Major Bank Heist: $10 Million Stolen in Daring Daylight Robbery", time: "5 hours ago", views: "235K", category: "Robbery" },
-  { id: 1, title: "Major Bank Heist: $10 Million Stolen in Daring Daylight Robbery", time: "5 hours ago", views: "235K", category: "Robbery" },
-  { id: 1, title: "Major Bank Heist: $10 Million Stolen in Daring Daylight Robbery", time: "5 hours ago", views: "235K", category: "Robbery" },
-  { id: 2, title: "Serial Killer Case Reopened After New DNA Evidence Emerges", time: "8 hours ago", views: "195K", category: "Murder" },
-  { id: 3, title: "Cybercrime Ring Dismantled in International Police Operation", time: "12 hours ago", views: "217K", category: "Cybercrime" },
-  { id: 5, title: "Drug Cartel Leader Captured After Decade-Long Manhunt", time: "36 hours ago", views: "420K", category: "Drugs" },
-  { id: 3, title: "Cybercrime Ring Dismantled in International Police Operation", time: "12 hours ago", views: "217K", category: "Cybercrime" },
-  { id: 4, title: "High-Profile Corruption Case Sends Shockwaves Through Government", time: "24 hours ago", views: "156K", category: "Corruption" },
-  { id: 5, title: "Drug Cartel Leader Captured After Decade-Long Manhunt", time: "36 hours ago", views: "420K", category: "Drugs" },
-  { id: 6, title: "Art Theft at National Museum: Priceless Paintings Stolen", time: "48 hours ago", views: "340K", category: "Theft" },
+const categories = [
+  "Awareness",
+  "Murder",
+  "Cybercrime",
+  "Theft",
+  "Fraud",
+  "Kidnapping",
+  "Domestic Violence",
+  "Drugs",
 ];
 
 const MostViewedReports = () => {
-  const [selectedCategory, setSelectedCategory] = useState("Robbery");
+  const [selectedCategory, setSelectedCategory] = useState("Theft");
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // فلترة التقارير حسب الفئة المختارة
-  const filteredReports = reports.filter(report => report.category === selectedCategory);
+  const fetchReports = async (category) => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/articles/get?category=${category}`
+      );
+
+      // التأكد من جلب 3 مقالات فقط لكل فئة
+      const limitedReports = response.data.slice(0, 3);
+
+      setReports(limitedReports);
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports(selectedCategory);
+  }, [selectedCategory]);
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6">
@@ -25,9 +45,9 @@ const MostViewedReports = () => {
         <h2 className="text-xl font-bold">Most Viewed Reports</h2>
       </div>
 
-      {/* أزرار اختيار الفئة */}
+      {/* قائمة الفئات */}
       <div className="flex overflow-x-auto space-x-4 mb-6 pb-2">
-        {["Robbery", "Murder", "Cybercrime", "Corruption", "Drugs", "Theft"].map(category => (
+        {categories.map((category) => (
           <button
             key={category}
             onClick={() => setSelectedCategory(category)}
@@ -42,40 +62,48 @@ const MostViewedReports = () => {
         ))}
       </div>
 
-      {/* عرض التقارير المفلترة */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredReports.map((report, index) => (
-          <div key={`${report.id}-${index}`} className="bg-gray-100 rounded-lg overflow-hidden">
-            <div className="relative">
-              <span className="absolute top-3 left-3 bg-[var(--primary-color)] text-[var(--text-color)] text-xs font-bold px-2 py-1 rounded">
-                {report.category}
-              </span>
-              <div className="h-48 bg-gray-200 flex items-center justify-center">
-                <img
-                  src="/placeholder.svg"
-                  alt="News thumbnail"
-                  className="w-full h-full object-cover"
-                  width="400"
-                  height="200"
-                />
-              </div>
-            </div>
-            <div className="p-4">
-              <h3 className="font-bold text-[var(--background-color)] text-lg mb-2">{report.title}</h3>
-              <div className="flex items-center text-sm text-gray-500 mt-4">
-                <div className="flex items-center mr-4">
-                  <span className="w-4 h-4 mr-1">🕒</span>
-                  <span>{report.time}</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="w-4 h-4 mr-1">👁️</span>
-                  <span>{report.views} views</span>
+      {loading ? (
+        <div className="text-center">Loading data...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {reports.map((report, index) => (
+            <div
+              key={`${report.id}-${index}`}
+              className="bg-gray-100 rounded-lg overflow-hidden"
+            >
+              <div className="relative">
+                <span className="absolute top-3 left-3 bg-[var(--primary-color)] text-[var(--text-color)] text-xs font-bold px-2 py-1 rounded">
+                  {report.category}
+                </span>
+                <div className="h-48 bg-gray-200 flex items-center justify-center">
+                  <img
+                    src={`http://localhost:5000/${report.featuredImage}`} // جلب الصورة من البيانات
+                    alt={report.title || "News thumbnail"} // تجنب خطأ alt فارغ
+                    className="w-full h-full object-cover"
+                    width="400"
+                    height="200"
+                  />
                 </div>
               </div>
+              <div className="p-4">
+                <h3 className="font-bold text-[var(--background-color)] text-lg mb-2">
+                  {report.title}
+                </h3>
+                <div className="flex items-center text-sm text-gray-500 mt-4">
+                  <div className="flex items-center mr-4">
+                    <span className="w-4 h-4 mr-1">🕒</span>
+                    <span>{report.time}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="w-4 h-4 mr-1">👁️</span>
+                    <span>{report.views} views</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

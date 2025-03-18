@@ -1,8 +1,4 @@
 @import "tailwindcss";
-@tailwind base;
-
-
-
 
 @layer base {
   :root {
@@ -27,7 +23,6 @@
   background-color: var(--screen-dark);
 }
 
-
 /* الوضع الفاتح /
 .light-mode {
   --primary-color: #61090b;
@@ -43,7 +38,11 @@
 }
 
 / استخدام المتغيرات */
-body {
+/* استخدام المتغيرات */
+/* body {
   background-color: var(--background-color);
   color: var(--text-color);
-}
+} */
+
+
+

@@ -1,617 +1,543 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
-import {
-  Container,
-  Typography,
-  Grid,
-  Card,
-  CardHeader,
-  CardContent,
-  Avatar,
-  Button,
-  Paper,
-  Tabs,
-  Tab,
-  List,
-  ListItem,
-  ListItemText,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-} from "@mui/material";
-import {
-  Edit as EditIcon,
-  Restaurant as RestaurantIcon,
-  Delete as DeleteIcon,
-} from "@mui/icons-material";
-import { styled } from "@mui/system";
-
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { motion } from "framer-motion";
-
-// Custom styled components
-const StyledCard = styled(Card)(({ theme }) => ({
-  backgroundColor: "#E8F5E9",
-  borderRadius: "16px",
-  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-  transition: "transform 0.3s ease-in-out",
-  "&:hover": {
-    transform: "translateY(-8px)",
-  },
-}));
-
-const StyledAvatar = styled(Avatar)(({ theme }) => ({
-  width: 120,
-  height: 120,
-  border: `4px solid ${theme.palette.primary.main}`,
-  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-}));
-
-const StyledButton = styled(Button)(({ theme }) => ({
-  borderRadius: "25px",
-  padding: "10px 20px",
-  fontWeight: "bold",
-  textTransform: "none",
-  transition: "all 0.3s ease",
-  "&:hover": {
-    transform: "scale(1.05)",
-  },
-}));
-
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  backgroundColor: "#E8F5E9",
-  borderRadius: "16px",
-  padding: theme.spacing(3),
-  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-}));
-
-const StyledListItem = styled(ListItem)(({ theme }) => ({
-  backgroundColor: "#fff",
-  borderRadius: "12px",
-  marginBottom: theme.spacing(2),
-  padding: theme.spacing(2),
-  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-  transition: "transform 0.2s, box-shadow 0.2s",
-  "&:hover": {
-    transform: "translateY(-5px)",
-    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
-  },
-}));
-
-// Custom theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#4CAF50", // Fresh green color
-    },
-    secondary: {
-      main: "#FF5722", // Carrot orange color
-    },
-    background: {
-      default: "#F1F8E9", // Light green background
-    },
-    text: {
-      primary: "#33691E", // Dark green text
-      secondary: "#689F38", // Medium green text
-    },
-  },
-});
+import { jwtDecode } from "jwt-decode";
 
 const UserProfile = () => {
   const [user, setUser] = useState(null);
+  const [userComments, setUserComments] = useState([]);
+  const [savedArticles, setSavedArticles] = useState([]);
+  const [readingHistory, setReadingHistory] = useState([]);// New state
+  const [tabValue, setTabValue] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({});
-  const [showChefRequestForm, setShowChefRequestForm] = useState(false);
-  const [tabValue, setTabValue] = useState(0);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+
+  const tabs = [
+    { id: 0, label: "Saved Articles", icon: "📑" },
+    { id: 1, label: "Recent Activity", icon: "🕒" },
+    { id: 2, label: "Comments", icon: "💬" },
+  ];
 
   useEffect(() => {
     fetchUserProfile();
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      fetchUserComments();
+      fetchSavedArticles();
+      fetchReadingHistory(); // Fetch latest reading
+      setLoading(false);
+    }
+  }, [user]);
+
   const fetchUserProfile = async () => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("❌ No token found in localStorage");
+        return;
+      }
+
+      const decodedToken = jwtDecode(token);
+      if (!decodedToken.userId) {
+        console.error("❌ No user ID found in token");
+        return;
+      }
+
       const response = await axios.get(
-        `http://localhost:5000/api/users/profile`,
-        { withCredentials: true }
+        "http://localhost:5000/api/users/profile",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
-      console.log(response.data);
-      setUser(response.data);
-      setEditedUser(response.data);
+
+      setUser(response.data.user);
     } catch (error) {
-      console.error("Error fetching user profile:", error);
+      console.error(
+        "❌ Error fetching profile:",
+        error.response?.data || error.message
+      );
     }
   };
 
-  const handleEdit = () => setIsEditing(true);
+  const fetchUserComments = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return console.error("❌ No token found");
+
+      const response = await axios.get(
+        "http://localhost:5000/api/articles/user-comments",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setUserComments(response.data.comments);
+    } catch (error) {
+      console.error(
+        "❌ Error fetching comments:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  const fetchSavedArticles = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return console.error("❌ No token found");
+
+      const response = await axios.get(
+        "http://localhost:5000/api/articles/saved-articles",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setSavedArticles(response.data.savedArticles);
+    } catch (error) {
+      console.error(
+        "❌ Error fetching saved articles:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  const fetchReadingHistory = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return console.error("❌ No token found");
+
+      const response = await axios.get(
+        "http://localhost:5000/api/articles/latest-reading", // Use the correct endpoint
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setReadingHistory(response.data.readingHistory); // Update the state with readingHistory
+    } catch (error) {
+      console.error(
+        "❌ Error fetching reading history:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  const handleRemoveSavedArticle = async (articleId) => {
+    console.log(articleId);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.delete(
+        `http://localhost:5000/api/saved/article/remove-saved-article/${articleId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // إذا كانت العملية ناجحة، حدث حالة savedArticles
+      setSavedArticles((prevArticles) =>
+        prevArticles.filter((article) => article._id !== articleId)
+      );
+
+      console.log("✅ Article deleted successfully");
+    } 
+    
+    catch (error) {
+      console.error(
+        "❌ Error removing saved article:",
+        error.response?.data || error.message
+      );
+    }
+  };
+  //bilal remove comment code (god forgive me)
+  const handleRemovecomment = async (commentId) => {
+    console.log(commentId);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.delete(
+        `http://localhost:5000/api/comment/remove-comment/${commentId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+    } catch (error) {
+      console.error(
+        "❌ Error removing comment:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  const handleEdit = () => {
+    setEditedUser({
+      username: user.username,
+      email: user.email,
+    });
+    setIsEditing(true);
+  };
+
   const handleCancel = () => {
     setIsEditing(false);
-    setEditedUser(user);
+    setSelectedFile(null);
+    setPreview(null);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedFile(file);
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    }
   };
 
   const handleSave = async () => {
     try {
-      const response = await axios.put(
-        "http://localhost:5000/api/users/profile",
-        editedUser,
-        { withCredentials: true }
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("❌ No token found");
+        return;
+      }
+
+      const formData = new FormData();
+
+      if (selectedFile) {
+        formData.append("profilePicture", selectedFile);
+      }
+
+      if (editedUser.username) {
+        formData.append("username", editedUser.username);
+      }
+
+      const response = await axios.post(
+        "http://localhost:5000/api/profile/upload-picture",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-      setUser(response.data);
+
+      setUser(response.data.user);
       setIsEditing(false);
-    } catch (error) {
-      console.error("Error updating user profile:", error);
-    }
-  };
-
-  const handleChange = (e) => {
-    setEditedUser({ ...editedUser, [e.target.name]: e.target.value });
-  };
-
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
-
-  const handleRemoveSavedRecipe = async (recipeId) => {
-    try {
-      console.log(recipeId);
-      const response = await axios.delete(
-        `http://localhost:5000/api/users/saved-recipes/${recipeId}`,
-        { withCredentials: true }
-      );
-      console.log("Server response:", response.data);
-      fetchUserProfile();
+      setSelectedFile(null);
+      setPreview(null);
     } catch (error) {
       console.error(
-        "Error removing saved recipe:",
-        error.response ? error.response.data : error.message
+        "❌ Error uploading/updating profile:",
+        error.response?.data || error.message
       );
     }
   };
 
-  const handleRemoveOrderHistory = async (orderId) => {
-    try {
-      await axios.delete(
-        `http://localhost:5000/api/users/order-history/${orderId}`,
-        { withCredentials: true }
-      );
-      fetchUserProfile();
-    } catch (error) {
-      console.error("Error removing order history:", error);
-    }
+  const dateFormatter = (dateString) => {
+    const options = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    };
+    return new Date(dateString).toLocaleDateString("en-US", options);
   };
 
-  const handleChefRequest = () => setShowChefRequestForm(true);
-  const closeChefRequestForm = () => setShowChefRequestForm(false);
+  const handleDeleteComment = (commentId) => {
+    console.log("Delete comment", commentId);
+  };
 
-  if (!user)
+  if (loading) {
     return (
-      <Typography variant="h6" align="center" sx={{ mt: 4 }}>
-        Loading...
-      </Typography>
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="text-xl font-bold text-[#61090b] animate-pulse">
+          Loading Profile Data...
+        </div>
+      </div>
     );
+  }
 
-  const RecipeList = ({ user, handleRemoveSavedRecipe }) => {};
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="text-xl font-bold text-[#61090b]">
+          User not found or login required
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <ThemeProvider theme={theme}>
-      <Container maxWidth="lg" sx={{ py: 6 }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Typography
-            variant="h3"
-            component="h1"
-            align="center"
-            color="primary"
-            gutterBottom
-            sx={{ fontWeight: "bold", mb: 4 }}
-          >
-            User Profile
-          </Typography>
+    <div className="max-w-7xl mx-auto p-4 md:p-6 bg-white min-h-screen">
+      <div className="text-center mb-6">
+        <h1 className="text-3xl font-bold text-[#61090b] uppercase">
+          CrimeGazette
+        </h1>
+        <h2 className="text-xl text-gray-700 mt-1">
+          Case File: {user.username.toUpperCase()}
+        </h2>
+      </div>
 
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={4}>
-              <StyledCard>
-                <CardHeader
-                  avatar={
-                    <StyledAvatar
-                      src={user.profilePicture || Profile}
-                      alt={user.name}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="md:col-span-4">
+          <div className="bg-white rounded-lg shadow-lg border border-[#61090b] overflow-hidden">
+            <div className="p-6 flex flex-col items-center">
+              <div className="relative">
+                <div className="w-24 h-24 rounded-full bg-[#61090b] text-white flex items-center justify-center text-3xl font-bold border-4 border-[#61090b] shadow-xl">
+                  {user.profilePicture ? (
+                    <img
+                      src={user.profilePicture}
+                      alt={user.username}
+                      className="w-full h-full rounded-full object-cover"
                     />
-                  }
-                  title={
-                    <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                      {user.name}
-                    </Typography>
-                  }
-                  subheader={
-                    <Typography variant="h6" color="text.secondary">
-                      {user.role}
-                    </Typography>
-                  }
-                />
-                <CardContent>
-                  <Typography variant="body1" paragraph>
-                    <strong>Email:</strong> {user.email}
-                  </Typography>
-                  <Typography variant="body1" paragraph>
-                    <strong>Bio:</strong> {user.bio}
-                  </Typography>
-                  <StyledButton
-                    startIcon={<EditIcon />}
-                    onClick={handleEdit}
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    sx={{ mt: 2 }}
-                  >
-                    Edit Profile
-                  </StyledButton>
-                  <div className={user.role == "chef" ? "hidden" : ""}>
-                    <StyledButton
-                      startIcon={<RestaurantIcon />}
-                      onClick={handleChefRequest}
-                      variant="outlined"
-                      color="secondary"
-                      fullWidth
-                      sx={{ mt: 2 }}
-                    >
-                      Become a Chef
-                    </StyledButton>
-                  </div>
+                  ) : (
+                    user.username.charAt(0).toUpperCase()
+                  )}
+                </div>
+                <span className="absolute bottom-0 right-0 text-[#61090b] text-xl">
+                  👤
+                </span>
+              </div>
 
-                  <div className={user.role == "chef" ? "" : "hidden"}>
-                    <StyledButton
-                      startIcon={<RestaurantIcon />}
-                      onClick={() => navigate("/profileChef")}
-                      variant="outlined"
-                      fullWidth
-                      sx={{
-                        mt: 2,
-                        backgroundImage:
-                          "linear-gradient(45deg, #FF6B6B, #FFD93D)", // Gradient color
-                        color: "white", // Text color
-                        "&:hover": {
-                          backgroundImage:
-                            "linear-gradient(45deg, #FFD93D, #FF6B6B)", // Reverse gradient on hover
-                          boxShadow: "0px 4px 20px rgba(255, 107, 107, 0.7)", // Shadow effect on hover
-                        },
-                      }}
-                    >
-                      Chef Dashboard
-                    </StyledButton>
-                  </div>
-                </CardContent>
-              </StyledCard>
-            </Grid>
+              <h3 className="text-xl font-bold mt-4 text-black">
+                {user.username}
+              </h3>
+              <p className="text-[#61090b] uppercase text-sm tracking-wider">
+                {user.role || "USER"}
+              </p>
+            </div>
 
-            <Grid item xs={12} md={8}>
-              <StyledPaper>
-                <Tabs
-                  value={tabValue}
-                  onChange={handleTabChange}
-                  centered
-                  sx={{ mb: 3 }}
+            <div className="px-6 pb-6">
+              <div className="border-t border-[#61090b] my-3"></div>
+              <div className="mb-4">
+                <p className="text-black mb-2">
+                  <strong>CASE ID:</strong> #{user._id?.slice(-6) || "unknown"}
+                </p>
+                <p className="text-black mb-2">
+                  <strong>CONTACT:</strong> {user.email}
+                </p>
+                <p className="text-black">
+                  <strong>STATUS:</strong> Active
+                </p>
+              </div>
+
+              <button
+                onClick={handleEdit}
+                className="w-full bg-[#61090b] text-white py-2 px-4 flex items-center justify-center uppercase font-bold tracking-wider hover:bg-[#8b0d11] transition-colors border-l-4 border-[#400608] mt-4"
+              >
+                <span className="mr-2">✏️</span> Edit Case File
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="md:col-span-8">
+          <div className="bg-white rounded-lg shadow-lg border border-[#61090b] overflow-hidden">
+            <div className="flex overflow-x-auto border-b border-[#61090b]">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setTabValue(tab.id)}
+                  className={`px-4 py-3 font-medium uppercase tracking-wider flex-1 transition-colors flex items-center justify-center ${
+                    tabValue === tab.id
+                      ? "border-b-4 border-[#61090b] text-black font-bold"
+                      : "text-gray-600 hover:text-black"
+                  }`}
                 >
-                  <Tab label="Saved Recipes" />
-                  <Tab label="Order History" />
-                </Tabs>
+                  <span className="mr-2">{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-                {tabValue === 0 && (
-                  <List>
-                    {user.savedRecipes?.map((recipe) => (
-                      <StyledListItem key={recipe.id}>
-                        <Grid container spacing={2} alignItems="center">
-                          {/* Recipe Image */}
-                          <Grid item xs={12} md={3}>
-                            {recipe.photos.length > 0 ? (
-                              <Avatar
-                                src={recipe.photos[0]}
-                                alt={recipe.title}
-                                variant="rounded"
-                                sx={{
-                                  width: "100%",
-                                  height: "160px",
-                                  borderRadius: "12px",
-                                  objectFit: "cover",
-                                }}
-                              />
-                            ) : (
-                              <Avatar
-                                sx={{
-                                  width: "100%",
-                                  height: "160px",
-                                  borderRadius: "12px",
-                                  backgroundColor: "#e0e0e0",
-                                  display: "flex",
-                                  justifyContent: "center",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Typography variant="h6" color="textSecondary">
-                                  No Image
-                                </Typography>
-                              </Avatar>
-                            )}
-                          </Grid>
-
-                          {/* Recipe Details */}
-                          <Grid item xs={12} md={6}>
-                            <ListItemText
-                              primary={
-                                <Typography
-                                  variant="h5"
-                                  sx={{ color: "#333", fontWeight: "bold" }}
-                                >
-                                  {recipe.title}
-                                </Typography>
-                              }
-                              secondary={
-                                <div style={{ marginTop: "10px" }}>
-                                  <Typography
-                                    variant="body2"
-                                    sx={{ color: "#757575", mb: 1 }}
-                                  >
-                                    Chef: {recipe.chef?.name}
-                                  </Typography>
-                                  <Typography
-                                    variant="body2"
-                                    sx={{ color: "#757575", mb: 1 }}
-                                  >
-                                    Cooking Time: {recipe.cookingTime} mins
-                                  </Typography>
-                                  <Typography
-                                    variant="body2"
-                                    sx={{ color: "#757575", mb: 1 }}
-                                  >
-                                    Cuisine Type: {recipe.cuisineType}
-                                  </Typography>
-                                  <Typography
-                                    variant="body2"
-                                    sx={{ color: "#757575", mb: 1 }}
-                                  >
-                                    Servings: {recipe.servings}
-                                  </Typography>
-                                </div>
-                              }
-                            />
-                          </Grid>
-                          {/* Action Buttons */}
-                          <Grid
-                            item
-                            xs={12}
-                            md={3}
-                            sx={{
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "flex-end",
-                              gap: "12px",
-                            }}
+            <div className="p-6 bg-white">
+              {tabValue === 0 && (
+                <div>
+                  <h3 className="text-lg font-bold mb-4 pb-2 border-b-2 border-[#61090b] text-black">
+                    SAVED ARTICLES
+                  </h3>
+                  {savedArticles.length > 0 ? (
+                    <div className="space-y-4">
+                      {savedArticles.map((article) => (
+                        <div
+                          key={article._id}
+                          className="border-b border-gray-200 pb-3 pl-3 relative hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="border-l-2 border-[#61090b] pl-3">
+                            <h4 className="font-bold text-black">
+                              {article.title}
+                            </h4>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Published on {dateFormatter(article.publishDate)}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() =>
+                              handleRemoveSavedArticle(article._id)
+                            }
+                            className="absolute top-3 right-3 bg-red-600 text-white py-1 px-3 rounded-md hover:bg-red-700 transition duration-300"
                           >
-                            <StyledButton
-                              variant="contained"
-                              onClick={() => navigate(`/recipe/${recipe._id}`)}
-                              sx={{
-                                backgroundColor: "#4caf50",
-                                color: "#fff",
-                                "&:hover": {
-                                  backgroundColor: "#388e3c",
-                                },
-                                width: "100%",
-                              }}
-                            >
-                              View Details
-                            </StyledButton>
-                            <IconButton
-                              edge="end"
-                              aria-label="delete"
-                              onClick={() =>
-                                handleRemoveSavedRecipe(recipe._id)
-                              }
-                              sx={{
-                                color: "#e53935",
-                                transition: "color 0.2s",
-                                "&:hover": { color: "#d32f2f" },
-                              }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Grid>
-                        </Grid>
-                      </StyledListItem>
-                    ))}
-                  </List>
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-6 text-center text-gray-500">
+                      No saved articles.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tabValue === 1 && (
+                <div>
+                  <h3 className="text-lg font-bold mb-4 pb-2 border-b-2 border-[#61090b] text-black">
+                    RECENT ACTIVITY
+                  </h3>
+                  {readingHistory.length > 0 ? (
+                    <div className="space-y-4">
+                      {readingHistory.map((article) => (
+                        <div
+                          key={article._id}
+                          className="border-b border-gray-200 pb-3 pl-3 relative hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="border-l-2 border-[#61090b] pl-3">
+                            <h4 className="font-bold text-black">
+                              {article.title}
+                            </h4>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Published on {dateFormatter(article.createdAt)}
+                            </p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Views: {article.views} | Likes: {article.likes}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-6 text-center text-gray-500">
+                      No recent activity to display.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {tabValue === 2 && (
+                <div>
+                  <h3 className="text-lg font-bold mb-4 pb-2 border-b-2 border-[#61090b] text-black">
+                    Comments
+                  </h3>
+                  {userComments.length > 0 ? (
+                    <div className="space-y-4">
+                      {userComments.map((comment) => (
+                        <div
+                          key={comment._id}
+                          className="border-b border-gray-200 pb-3 pl-3 relative hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="border-l-2 border-[#61090b] pl-3 pr-8">
+                            <p className="font-bold text-black">
+                              {comment.text}
+                            </p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Posted on {dateFormatter(comment.createdAt)}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleRemovecomment(comment._id)}
+                            className="absolute right-2 top-2 text-red-600 hover:text-red-800"
+                            title="Delete statement"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-6 text-center text-gray-500">
+                      No statements recorded.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {isEditing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Edit Profile</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={editedUser.username || ""}
+                  onChange={(e) =>
+                    setEditedUser({ ...editedUser, username: e.target.value })
+                  }
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={editedUser.email || ""}
+                  disabled
+                  className="w-full p-2 border border-gray-300 rounded bg-gray-100"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Profile Picture
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
+                {preview ? (
+                  <img
+                    src={preview}
+                    alt="Profile Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-full"
+                  />
+                ) : (
+                  user.profilePicture && (
+                    <img
+                      src={user.profilePicture}
+                      alt={user.username}
+                      className="mt-2 w-24 h-24 object-cover rounded-full"
+                    />
+                  )
                 )}
-
-                {tabValue === 1 && (
-                  <List>
-                    {user.orderHistory?.map((order) => (
-                      <StyledListItem key={order.id}>
-                        <Grid container spacing={2} alignItems="center">
-                          {/* Order Details */}
-                          <Grid item xs={12} md={8}>
-                            <ListItemText
-                              primary={
-                                <Typography
-                                  variant="h5"
-                                  color="primary"
-                                  sx={{ fontWeight: "bold" }}
-                                >
-                                  Order on{" "}
-                                  {new Date(
-                                    order.orderDate
-                                  ).toLocaleDateString()}
-                                </Typography>
-                              }
-                              secondary={
-                                <>
-                                  <Typography
-                                    variant="body1"
-                                    color="textSecondary"
-                                    sx={{ mt: 1 }}
-                                  >
-                                    Status:{" "}
-                                    <span
-                                      style={{
-                                        color: "#4caf50",
-                                        fontWeight: "bold",
-                                      }}
-                                    >
-                                      {order.status}
-                                    </span>
-                                  </Typography>
-                                  <Typography
-                                    variant="body1"
-                                    color="textSecondary"
-                                  >
-                                    Total Amount:{" "}
-                                    <span
-                                      style={{
-                                        color: "#1976d2",
-                                        fontWeight: "bold",
-                                      }}
-                                    >
-                                      ${order.totalAmount.toFixed(2)}
-                                    </span>
-                                  </Typography>
-                                  <Typography
-                                    variant="body1"
-                                    color="textSecondary"
-                                  >
-                                    Chef: {order.chef?.name}
-                                  </Typography>
-                                  <Typography
-                                    variant="body1"
-                                    color="textSecondary"
-                                  >
-                                    Delivery Method: {order.deliveryMethod}
-                                  </Typography>
-
-                                  {/* List of Dishes Ordered */}
-                                  <Typography
-                                    variant="body1"
-                                    color="textSecondary"
-                                    sx={{ mt: 2 }}
-                                  >
-                                    Dishes:
-                                    <ul style={{ paddingLeft: "20px" }}>
-                                      {order.dishes
-                                        .sort((a, b) =>
-                                          a.dish.name.localeCompare(b.dish.name)
-                                        )
-                                        .map((dishItem) => (
-                                          <li
-                                            key={dishItem.dish.id}
-                                            style={{ marginBottom: "4px" }}
-                                          >
-                                            <span
-                                              style={{ fontWeight: "bold" }}
-                                            >
-                                              {dishItem.dish.name}
-                                            </span>{" "}
-                                            - {dishItem.quantity}x
-                                          </li>
-                                        ))}
-                                    </ul>
-                                  </Typography>
-                                </>
-                              }
-                            />
-                          </Grid>
-
-                          {/* Delete Button */}
-                          <Grid item xs={12} md={4} sx={{ textAlign: "right" }}>
-                            <IconButton
-                              edge="end"
-                              aria-label="delete"
-                              onClick={() =>
-                                handleRemoveOrderHistory(order._id)
-                              }
-                              sx={{
-                                color: "#ff5722",
-                                "&:hover": {
-                                  backgroundColor: "rgba(255, 87, 34, 0.1)",
-                                },
-                              }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Grid>
-                        </Grid>
-                      </StyledListItem>
-                    ))}
-                  </List>
-                )}
-              </StyledPaper>
-            </Grid>
-          </Grid>
-
-          <Dialog
-            open={isEditing}
-            onClose={handleCancel}
-            maxWidth="sm"
-            fullWidth
-          >
-            <DialogTitle>Edit Profile</DialogTitle>
-            <DialogContent>
-              <TextField
-                name="name"
-                label="Name"
-                value={editedUser.name}
-                onChange={handleChange}
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                name="email"
-                label="Email"
-                value={editedUser.email}
-                onChange={handleChange}
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                name="bio"
-                label="Bio"
-                value={editedUser.bio}
-                onChange={handleChange}
-                fullWidth
-                multiline
-                rows={4}
-                margin="normal"
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCancel} color="primary">
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={handleCancel}
+                className="px-4 py-2 text-gray-700 hover:text-black"
+              >
                 Cancel
-              </Button>
-              <Button onClick={handleSave} color="primary" variant="contained">
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 bg-[#61090b] text-white rounded hover:bg-[#8b0d11]"
+              >
                 Save
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* Chef Request Form as Popup */}
-          <Dialog
-            open={showChefRequestForm}
-            onClose={closeChefRequestForm}
-            fullWidth
-            sx={{ zIndex: 1050 }}
-          >
-            <DialogContent>
-              <ChefRequestForm onClose={closeChefRequestForm} />
-            </DialogContent>
-          </Dialog>
-        </motion.div>
-      </Container>
-    </ThemeProvider>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

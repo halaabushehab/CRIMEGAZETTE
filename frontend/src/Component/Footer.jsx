@@ -180,7 +180,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
               <p className="flex items-center">
-                © 2025 Crime Scene Investigator. All rights reserved.
+                Â© 2025 Crime Scene Investigator. All rights reserved.
               </p>
             </div>
             <div>

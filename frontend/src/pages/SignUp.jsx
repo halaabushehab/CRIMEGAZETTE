@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import Cookies from "js-cookie";
 import axios from "axios";
 // Replace with your own dark/crime themed background image
 import photo1 from "../assets/photo1.jpeg";
@@ -44,13 +43,11 @@ const Signup = () => {
     try {
       const res = await axios.post(
         "http://localhost:5000/api/users/google-login",
-        { credential: response.credential },
-        { withCredentials: true }
+        { credential: response.credential }
       );
 
       if (res.data.token) {
-        Cookies.set("token", res.data.token, { expires: 1 });
-        Cookies.set("user_id", res.data.user_id, { expires: 1 });
+        localStorage.setItem("token", res.data.token); // Store token in localStorage
       }
 
       Swal.fire({
@@ -89,7 +86,6 @@ const Signup = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true,
         }
       );
 
@@ -124,13 +120,11 @@ const Signup = () => {
     try {
       const response = await axios.post(
         "http://localhost:5000/api/users/verify-otp",
-        { email: formData.email, otp },
-        { withCredentials: true }
+        { ...formData, otp } // Include form data and OTP
       );
 
       if (response.data.token) {
-        Cookies.set("token", response.data.token, { expires: 1 });
-        Cookies.set("user_id", response.data.user_id, { expires: 1 });
+        localStorage.setItem("token", response.data.token); // Store token in localStorage
       }
 
       Swal.fire({
@@ -216,7 +210,7 @@ const Signup = () => {
               <input
                 type="password"
                 name="password"
-                placeholder="Security Clearance"
+                placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500"
@@ -232,7 +226,7 @@ const Signup = () => {
               }`}
               disabled={loading}
             >
-              {loading ? "PROCESSING..." : "JOIN INVESTIGATION"}
+              {loading ? "PROCESSING..." : "REGISTER"}
             </button>
           </form>
         ) : (

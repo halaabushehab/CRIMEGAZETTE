@@ -23,11 +23,12 @@ const Statistics = () => {
   }, []);
 
   const defaultStats = [
-    { id: 1, title: "Homicides", number: 189, change: "14% increase since last year", icon: <UserX size={20} /> },
-    { id: 2, title: "Missing Persons", number: 42, change: "7 cases solved in last month", icon: <AlertTriangle size={20} /> },
-    { id: 3, title: "Cold Cases", number: 76, change: "3 reopened this quarter", icon: <FileText size={20} /> },
-    { id: 4, title: "Active Investigations", number: 127, change: "23 new cases this month", icon: <Shield size={20} /> }
+    { id: 1, title: "Homicides", number: 7.6, change: "Per 100K people globally", icon: <UserX size={20} /> },
+    { id: 2, title: "Missing Persons", number: 600000, change: "Reported annually in the US", icon: <AlertTriangle size={20} /> },
+    { id: 3, title: "Cold Cases", number: 250000, change: "Unsolved homicide cases in the US since 1980", icon: <FileText size={20} /> },
+    { id: 4, title: "Active Investigations", number: 1200000, change: "Ongoing criminal cases in the US (2022)", icon: <Shield size={20} /> }
   ];
+  
 
   const displayedStats = stats.length > 0 ? stats : defaultStats;
 
@@ -272,5 +273,14 @@ style.textContent = `
 document.head.appendChild(style);
 
 export default Statistics;
+
+
+
+
+
+
+
+
+
 
 
