@@ -399,7 +399,7 @@ function Users() {
                         <span
                           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                             user.isActivated
-                              ? "bg-green-500 text-white"
+                              ? "bg-[var(--primary-color)] text-white"
                               : "bg-gray-400 text-white"
                           }`}
                         >

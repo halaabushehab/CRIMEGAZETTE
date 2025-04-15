@@ -4,6 +4,7 @@ import { useLocation, useSearchParams } from "react-router-dom";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { toast } from 'react-toastify';
 // Error Boundary للتعامل مع الأخطاء داخل مكون PayPalButtons
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -134,10 +135,10 @@ const fetchUserProfile = async () => {
         withCredentials: true,
       });
       console.log("Payment data sent successfully:", response.data);
-      alert("Payment recorded successfully!");
+      toast.success("Payment recorded successfully!");
     } catch (error) {
       console.error("Error while sending payment data:", error);
-      alert("Failed to record payment. Please try again.");
+      toast.error("Failed to record payment. Please try again.");
     }
   };
 
@@ -145,7 +146,7 @@ const fetchUserProfile = async () => {
     return actions.order.capture().then((details) => {
       console.log("Payment completed:", details);
       sendPaymentData(details);
-      alert("Payment successful!");
+      toast.success("Payment successful!");
     });
   };
   

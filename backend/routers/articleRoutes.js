@@ -13,6 +13,7 @@ const {
   getArticlesJenan,
   getSavedArticles,
   getLatestReadingForUser,
+  deleteUserComment,
   // getTop5Articles
 } = require("../controllers/articleController");
 const upload = require("../config/multer");
@@ -30,5 +31,6 @@ router.get("/getComment-articles/:id/comments", getArticleComments);
 router.get("/user-comments", getArticleAuthorComments);
 router.get("/saved-articles", getSavedArticles);
 router.get("/latest-reading", getLatestReadingForUser);
+router.delete("/delete-article/:articleId/:commentId", deleteUserComment);
 
 module.exports = router;

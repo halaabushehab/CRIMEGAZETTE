@@ -1,3 +1,10 @@
 {
-    "title":"Flower Gallery"
+  "navbar": {
+    "home": "Home",
+    "news": "News",
+    "about_us": "About Us",
+    "contact_us": "Contact Us",
+    "blogs": "Blogs",
+    "get_premium": "Get Premium"
+  }
 }

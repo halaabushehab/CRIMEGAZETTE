@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import jsPDF from "jspdf";
 import axios from "axios";
 import html2canvas from "html2canvas";
-
+import { toast } from 'react-toastify';
 function FormDetails() {
   const [formData, setFormData] = useState({});
   const [files, setFiles] = useState([]);
@@ -148,7 +148,7 @@ function FormDetails() {
 
 
 
-//bilal addmark
+
 const handleAddToBookmark = async () => {
   try {
     const token = localStorage.getItem("token");
@@ -167,42 +167,17 @@ const handleAddToBookmark = async () => {
     );
 
     if (response.status === 200) {
-      alert("Article bookmarked successfully!");
+      toast.success("Article bookmarked successfully!");
     }
   } catch (error) {
     console.error("Error bookmarking article:", error);
-    alert(error.response?.data?.message || "Failed to bookmark article.");
+    toast.error(error.response?.data?.message || "Failed to bookmark article.");
   }
 };
 
 
 
 
-// const handleAddToBookmark = async () => {
-//   try {
-//     const token = localStorage.getItem("token");
-//     if (!token) {
-//       throw new Error("You must be logged in to bookmark this article.");
-//     }
-
-//     const response = await axios.post(
-//       `http://localhost:5000/api/articles/bookmark-article/${id}`,
-//       {},
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       }
-//     );
-
-//     if (response.status === 200) {
-//       alert("Article bookmarked successfully!");
-//     }
-//   } catch (error) {
-//     console.error("Error bookmarking article:", error);
-//     alert(error.response?.data?.message || "Failed to bookmark article.");
-//   }
-// };
   const handleAddComment = async () => {
     try {
       setLoading(true);

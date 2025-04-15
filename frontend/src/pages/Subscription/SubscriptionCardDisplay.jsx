@@ -49,7 +49,7 @@ const SubscriptionCardDisplay = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-   
+  
     fetch("http://localhost:5000/api/subscription")
       .then((res) => res.json())
       .then((data) => {

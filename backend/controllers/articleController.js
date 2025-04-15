@@ -324,7 +324,6 @@ const getArticleComments = async (req, res) => {
     res.status(500).json({ message: "Error retrieving comments", error });
   }
 };
-
 const getArticleAuthorComments = async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -341,7 +340,7 @@ const getArticleAuthorComments = async (req, res) => {
       return res.status(400).json({ message: "Invalid user ID" });
     }
 
-    // Use `new` to properly instantiate ObjectId
+    // Use new to properly instantiate ObjectId
     const articles = await Article.find({
       "comments.author": new mongoose.Types.ObjectId(userId),
     }).populate({
@@ -357,11 +356,14 @@ const getArticleAuthorComments = async (req, res) => {
         .json({ message: "User has no comments", comments: [] });
     }
 
-    // Extract user-specific comments
+    // Extract user-specific comments and include the articleId in each comment
     const userComments = articles.flatMap((article) =>
-      article.comments.filter(
-        (comment) => comment.author._id.toString() === userId
-      )
+      article.comments
+        .filter((comment) => comment.author._id.toString() === userId)
+        .map((comment) => ({
+          ...comment.toObject(),
+          articleId: article._id, // add the articleId here
+        }))
     );
 
     console.log("✅ User Comments Extracted:", userComments);
@@ -377,6 +379,69 @@ const getArticleAuthorComments = async (req, res) => {
       .json({ message: "Internal Server Error", error: error.message });
   }
 };
+
+const deleteUserComment = async (req, res) => {
+  try {
+    // Check for authorization header and extract token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.userId;
+
+    console.log("✅ Extracted User ID:", userId);
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    // Extract articleId and commentId from the request parameters
+    const { articleId, commentId } = req.params;
+    if (
+      !mongoose.Types.ObjectId.isValid(articleId) ||
+      !mongoose.Types.ObjectId.isValid(commentId)
+    ) {
+      return res.status(400).json({ message: "Invalid article or comment ID" });
+    }
+
+    // Find the article that contains the comment and ensure the comment belongs to the user
+    const article = await Article.findOne({
+      _id: articleId,
+      "comments._id": commentId,
+      "comments.author": new mongoose.Types.ObjectId(userId),
+    });
+
+    if (!article) {
+      return res
+        .status(404)
+        .json({ message: "Comment not found or not authorized to delete" });
+    }
+
+    // Remove the comment from the article's comments array
+    article.comments = article.comments.filter(
+      (comment) => comment._id.toString() !== commentId
+    );
+
+    await article.save();
+
+    console.log("✅ Comment deleted successfully:", commentId);
+
+    res.status(200).json({
+      message: "Comment deleted successfully",
+      articleId,
+      commentId,
+    });
+  } catch (error) {
+    console.error("❌ Server Error deleting user comment:", error);
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+  }
+};
+
+
 
 const getSavedArticles = async (req, res) => {
   try {
@@ -467,6 +532,7 @@ module.exports = {
   getArticlesJenan,
   getSavedArticles,
   getLatestReadingForUser,
+  deleteUserComment
 
   // getTop5Articles,
 };

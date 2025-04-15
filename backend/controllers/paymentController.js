@@ -11,7 +11,7 @@ exports.createPayment = async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // جلب بطاقة الاشتراك للحصول على السعر والعنوان
+   
     const subscriptionCard = await SubscriptionCard.findById(
       subscriptionCard_id
     );
@@ -19,10 +19,10 @@ exports.createPayment = async (req, res) => {
       return res.status(404).json({ error: "Subscription card not found" });
     }
 
-    // تحويل السعر إلى رقم (نفترض أن السعر محفوظ كنص مثل "$9.99")
+   
     const amount = parseFloat(subscriptionCard.price.replace("$", ""));
 
-    // إنشاء سجل الدفع
+   
     const paymentData = {
       subscriber: subscriber_id,
       subscriptionCard: subscriptionCard_id,
@@ -33,8 +33,6 @@ exports.createPayment = async (req, res) => {
 
     const payment = await Payment.create(paymentData);
 
-    // تحديث بيانات المستخدم: تخزين عنوان الاشتراك وتاريخ انتهاء الاشتراك
-    // مثال: الاشتراك لمدة شهر
     const durationMatch = subscriptionCard.duration.match(/\d+/);
     if (!durationMatch) {
       throw new Error("No numeric value found in duration");

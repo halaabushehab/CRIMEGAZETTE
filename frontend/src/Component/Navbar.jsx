@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "../Context/LanguageContext";
+// import arabicIcon from "../assets/translation.png";
+// import englishIcon from "../assets/translation (1).png";
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -11,6 +13,9 @@ const Navbar = () => {
   const { language, toggleLanguage } = useLanguage();
   const mobileMenuRef = useRef(null);
   const hamburgerRef = useRef(null);
+
+
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -111,6 +116,17 @@ const Navbar = () => {
                 </>
               )}
             </div>
+
+
+            {/* Language Toggle Buttons */}
+            {/* <button onClick={changeLanguage}>
+              <img
+                src={language === "en" ? arabicIcon : englishIcon}
+                alt="Language Icon"
+                className="w-11 h-11 transition-transform duration-300 hover:scale-110 mr-3"
+              />
+            </button> */}
+
           </div>
         </div>
       </div>

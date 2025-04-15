@@ -5,7 +5,6 @@ import axios from "axios";
 import photo1 from "../assets/photo1.jpeg";
 
 const Login = () => {
-  // Define states
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -15,7 +14,6 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  // Load Google Sign-In library when component mounts
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
@@ -24,12 +22,11 @@ const Login = () => {
     script.onload = () => {
       window.google.accounts.id.initialize({
         client_id:
-          "268942872776-ulvhmack82ul53133h6fkdd4f7ehnsgb.apps.googleusercontent.com", // Replace with your client ID
+          "268942872776-ulvhmack82ul53133h6fkdd4f7ehnsgb.apps.googleusercontent.com",
         callback: handleGoogleLogin,
         ux_mode: "popup",
       });
 
-      // Display Google sign-in button
       window.google.accounts.id.renderButton(
         document.getElementById("google-signin-btn"),
         { theme: "filled_black", size: "large" }
@@ -38,7 +35,6 @@ const Login = () => {
     document.body.appendChild(script);
   }, [navigate]);
 
-  // Handle Google login
   const handleGoogleLogin = async (response) => {
     try {
       const res = await axios.post(
@@ -47,7 +43,7 @@ const Login = () => {
       );
 
       if (res.data.token) {
-        localStorage.setItem("token", res.data.token); // Store token in localStorage
+        localStorage.setItem("token", res.data.token);
       }
 
       Swal.fire({
@@ -70,12 +66,10 @@ const Login = () => {
     }
   };
 
-  // Handle form input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle email/password login
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -92,10 +86,10 @@ const Login = () => {
       );
 
       if (response.data.token) {
-        localStorage.setItem("token", response.data.token); // Store token in localStorage
+        localStorage.setItem("token", response.data.token);
         if (rememberMe) {
           const expiryDate = new Date();
-          expiryDate.setDate(expiryDate.getDate() + 30); // 30 days expiry
+          expiryDate.setDate(expiryDate.getDate() + 30);
           localStorage.setItem("token_expiry", expiryDate.toISOString());
         }
       }
@@ -108,7 +102,7 @@ const Login = () => {
         color: "#ffffff",
         confirmButtonColor: "#61090b",
       }).then(() => {
-         navigate(response.data.redirectUrl || "/");
+        navigate(response.data.redirectUrl || "/");
       });
     } catch (error) {
       Swal.fire({
@@ -132,18 +126,18 @@ const Login = () => {
         backgroundColor: "#000000",
       }}
     >
-      <div className="relative w-full max-w-md p-8 space-y-6 bg-black bg-opacity-80 shadow-2xl rounded-lg border border-gray-800 overflow-hidden">
+      <div className="relative w-full max-w-md p-8 space-y-6 bg-black bg-opacity-90 shadow-2xl rounded-lg border border-gray-800 overflow-hidden transform transition-all duration-500 hover:scale-105">
         {/* Red dripping effect at the top */}
         <div className="absolute top-0 left-0 right-0 h-2 bg-[#61090b]">
-          <div className="absolute -bottom-4 left-5 w-1 h-4 bg-[#61090b]"></div>
-          <div className="absolute -bottom-6 left-12 w-1 h-6 bg-[#61090b]"></div>
-          <div className="absolute -bottom-5 left-24 w-1 h-5 bg-[#61090b]"></div>
-          <div className="absolute -bottom-7 right-16 w-1 h-7 bg-[#61090b]"></div>
-          <div className="absolute -bottom-4 right-8 w-1 h-4 bg-[#61090b]"></div>
+          <div className="absolute -bottom-4 left-5 w-1 h-4 bg-[#61090b] animate-drip"></div>
+          <div className="absolute -bottom-6 left-12 w-1 h-6 bg-[#61090b] animate-drip-delay-1"></div>
+          <div className="absolute -bottom-5 left-24 w-1 h-5 bg-[#61090b] animate-drip-delay-2"></div>
+          <div className="absolute -bottom-7 right-16 w-1 h-7 bg-[#61090b] animate-drip-delay-3"></div>
+          <div className="absolute -bottom-4 right-8 w-1 h-4 bg-[#61090b] animate-drip-delay-4"></div>
         </div>
 
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-[#61090b] tracking-wider">
+          <h2 className="text-4xl font-bold text-[#61090b] tracking-wider animate-pulse">
             CRIMEGAZETTE
           </h2>
           <p className="text-[#ffffff] text-sm mt-1 italic">
@@ -159,7 +153,7 @@ const Login = () => {
               placeholder="Email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500"
+              className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500 transition-all duration-300 hover:border-red-700"
               required
             />
             <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#61090b] to-transparent"></div>
@@ -172,7 +166,7 @@ const Login = () => {
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500"
+              className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500 transition-all duration-300 hover:border-red-700"
               required
             />
             <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#61090b] to-transparent"></div>
@@ -200,6 +194,7 @@ const Login = () => {
                 href="/forgot-password"
                 className="text-[#61090b] hover:text-red-700"
               >
+                Forgot password?
               </a>
             </div>
           </div>
@@ -231,10 +226,10 @@ const Login = () => {
 
         {/* Red dripping effect at the bottom */}
         <div className="absolute bottom-0 left-0 right-0 h-2 bg-[#61090b]">
-          <div className="absolute -top-4 left-7 w-1 h-4 bg-[#61090b]"></div>
-          <div className="absolute -top-8 left-20 w-1 h-8 bg-[#61090b]"></div>
-          <div className="absolute -top-5 right-14 w-1 h-5 bg-[#61090b]"></div>
-          <div className="absolute -top-7 right-24 w-1 h-7 bg-[#61090b]"></div>
+          <div className="absolute -top-4 left-7 w-1 h-4 bg-[#61090b] animate-drip"></div>
+          <div className="absolute -top-8 left-20 w-1 h-8 bg-[#61090b] animate-drip-delay-1"></div>
+          <div className="absolute -top-5 right-14 w-1 h-5 bg-[#61090b] animate-drip-delay-2"></div>
+          <div className="absolute -top-7 right-24 w-1 h-7 bg-[#61090b] animate-drip-delay-3"></div>
         </div>
       </div>
     </div>

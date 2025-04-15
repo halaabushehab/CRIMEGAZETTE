@@ -8,7 +8,7 @@ const NewsTicker = () => {
     const fetchNews = async () => {
         try {
           const response = await axios.get(
-            "https://newsapi.org/v2/everything?q=tesla&from=2025-02-16&sortBy=publishedAt&apiKey=76850e9d2f054cb6b01870672b380ed0"
+            "https://newsapi.org/v2/everything?q=tesla&from=2025-02-18&sortBy=publishedAt&apiKey=bcc83c754b6c44be9249fdd3b0f905e2"
           );
       
           console.log("Total articles fetched:", response.data.articles.length);

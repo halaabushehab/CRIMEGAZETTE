@@ -37,6 +37,8 @@ import ContactDash from "./Component/AdminDashbord/ContactDash.jsx";
 import arabicIcon from "./assets/translation.png";
 import englishIcon from "./assets/translation (1).png";
 import { useTranslation } from "react-i18next";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 function App() {
   const { t } = useTranslation();
   const { language, toggleLanguage } = useLanguage();
@@ -133,7 +135,8 @@ function App() {
           className="w-8 h-8"
         />
       </button> */}
-    </>
+        <ToastContainer />
+     </>
   );
 }
 

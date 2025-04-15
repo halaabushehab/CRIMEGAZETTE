@@ -20,16 +20,13 @@ exports.createPost = async (req, res) => {
         imageAlt,
         date,
         tags,
-       
       });
   
 
       await post.save();
   
       
-      res.status(201).json({
-        message: "Post created successfully",
-        post
+      res.status(201).json({ message: "Post created successfully",   post
       });
     } catch (error) {
       
@@ -44,16 +41,10 @@ exports.createPost = async (req, res) => {
 exports.getPosts = async (req, res) => {
     try {
       const currentDate = new Date();
-  
-     
       const usersWithActiveSubscriptions = await User.find({
         subscriptionExpiry: { $gte: currentDate }, 
       });
-  
-   
       const activeUserIds = usersWithActiveSubscriptions.map(user => user._id);
-  
-     
       const posts = await Post.find({
         isDeleted: false,
         userId: { $in: activeUserIds } 
@@ -67,7 +58,6 @@ exports.getPosts = async (req, res) => {
 
   exports.getPostsAdmin = async (req, res) => {
     try {
-      // جلب المنشورات التي لم يتم حذفها
       const posts = await Post.find({ isDeleted: false });
       res.json(posts);
     } catch (error) {

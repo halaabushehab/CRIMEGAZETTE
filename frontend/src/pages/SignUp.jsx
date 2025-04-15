@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import axios from "axios";
-// Replace with your own dark/crime themed background image
-import photo1 from "../assets/photo1.jpeg";
+import photo1 from "../assets/photo1.jpeg"; // Replace with your dark/crime-themed background image
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -159,18 +158,18 @@ const Signup = () => {
         backgroundColor: "#000000",
       }}
     >
-      <div className="relative w-full max-w-md p-8 space-y-6 bg-black bg-opacity-80 shadow-2xl rounded-lg border border-gray-800 overflow-hidden">
+      <div className="relative w-full max-w-md p-8 space-y-6 bg-black bg-opacity-90 shadow-2xl rounded-lg border border-gray-800 overflow-hidden transform transition-all duration-500 hover:scale-105">
         {/* Red dripping effect at the top */}
         <div className="absolute top-0 left-0 right-0 h-2 bg-[#61090b]">
-          <div className="absolute -bottom-4 left-5 w-1 h-4 bg-[#61090b]"></div>
-          <div className="absolute -bottom-6 left-12 w-1 h-6 bg-[#61090b]"></div>
-          <div className="absolute -bottom-5 left-24 w-1 h-5 bg-[#61090b]"></div>
-          <div className="absolute -bottom-7 right-16 w-1 h-7 bg-[#61090b]"></div>
-          <div className="absolute -bottom-4 right-8 w-1 h-4 bg-[#61090b]"></div>
+          <div className="absolute -bottom-4 left-5 w-1 h-4 bg-[#61090b] animate-drip"></div>
+          <div className="absolute -bottom-6 left-12 w-1 h-6 bg-[#61090b] animate-drip-delay-1"></div>
+          <div className="absolute -bottom-5 left-24 w-1 h-5 bg-[#61090b] animate-drip-delay-2"></div>
+          <div className="absolute -bottom-7 right-16 w-1 h-7 bg-[#61090b] animate-drip-delay-3"></div>
+          <div className="absolute -bottom-4 right-8 w-1 h-4 bg-[#61090b] animate-drip-delay-4"></div>
         </div>
 
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-[#61090b] tracking-wider">
+          <h2 className="text-4xl font-bold text-[#61090b] tracking-wider animate-pulse">
             CRIMEGAZETTE
           </h2>
           <p className="text-[#ffffff] text-sm mt-1 italic">
@@ -184,10 +183,10 @@ const Signup = () => {
               <input
                 type="text"
                 name="username"
-                placeholder="username"
+                placeholder="Username"
                 value={formData.username}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500"
+                className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500 transition-all duration-300 hover:border-red-700"
                 required
               />
               <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#61090b] to-transparent"></div>
@@ -200,7 +199,7 @@ const Signup = () => {
                 placeholder="Email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500"
+                className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500 transition-all duration-300 hover:border-red-700"
                 required
               />
               <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#61090b] to-transparent"></div>
@@ -213,7 +212,7 @@ const Signup = () => {
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500"
+                className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500 transition-all duration-300 hover:border-red-700"
                 required
               />
               <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#61090b] to-transparent"></div>
@@ -238,7 +237,7 @@ const Signup = () => {
                 placeholder="Enter Verification Code"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500"
+                className="w-full px-4 py-2 border-b border-[#61090b] bg-transparent text-[#ffffff] focus:outline-none focus:border-red-700 placeholder-gray-500 transition-all duration-300 hover:border-red-700"
                 required
               />
               <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#61090b] to-transparent"></div>
@@ -272,10 +271,10 @@ const Signup = () => {
 
         {/* Bottom dripping effect */}
         <div className="absolute bottom-0 left-0 right-0 h-2 bg-[#61090b]">
-          <div className="absolute -top-4 left-7 w-1 h-4 bg-[#61090b]"></div>
-          <div className="absolute -top-8 left-20 w-1 h-8 bg-[#61090b]"></div>
-          <div className="absolute -top-5 right-14 w-1 h-5 bg-[#61090b]"></div>
-          <div className="absolute -top-7 right-24 w-1 h-7 bg-[#61090b]"></div>
+          <div className="absolute -top-4 left-7 w-1 h-4 bg-[#61090b] animate-drip"></div>
+          <div className="absolute -top-8 left-20 w-1 h-8 bg-[#61090b] animate-drip-delay-1"></div>
+          <div className="absolute -top-5 right-14 w-1 h-5 bg-[#61090b] animate-drip-delay-2"></div>
+          <div className="absolute -top-7 right-24 w-1 h-7 bg-[#61090b] animate-drip-delay-3"></div>
         </div>
       </div>
     </div>

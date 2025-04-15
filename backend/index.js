@@ -15,6 +15,7 @@ const profileRoutes = require("./routers/profileRoutes");
 const savedArticle = require('./routers/savedArticleRoutes');
 const commentRoutes = require('./routers/commentRoutes');
 const addbookmarkRoutes = require('./routers/addbookmarkRoutes');
+const visitRoutes = require("./routers/visitRoutes"); // ✅ استيراد المسارات
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use("/api/articles", articleRoutes);
 //
 app.use("/api/users", userRoutes);
 app.use("/app", messageroutes);
+app.use("/api/visit", visitRoutes);
 
 app.use("/api", subscriptionRoutes);
 app.use("/api", paymentRoutes);

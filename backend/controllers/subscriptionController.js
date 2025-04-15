@@ -44,7 +44,6 @@ exports.updateSubscriptionCard = async (req, res) => {
 exports.deleteSubscriptionCard = async (req, res) => {
   try {
     const { id } = req.params;
-    // Soft delete: set isDeleted to true and mark deletedAt timestamp
     const deletedCard = await SubscriptionCard.findByIdAndUpdate(
       id,
       { isDeleted: true, deletedAt: new Date() },
